@@ -25,8 +25,6 @@ export class AuthService {
 
       const passHash = await argon.hash(password);
 
-      // Create new customer in DB
-      // Save user to DB
       const savedCustomer = await this.prisma.customer.create({
         data: {
           email,
@@ -36,12 +34,10 @@ export class AuthService {
 
       delete savedCustomer.passHash;
 
-      // Genereta JWT
       const { access_token } = await this.signToken(
         savedCustomer.email,
         savedCustomer.id,
       );
-      // Return JWT
 
       return { access_token };
     } catch (error) {
@@ -51,29 +47,21 @@ export class AuthService {
     }
   }
 
-  async signIn(dto: AuthDto) {
+  async signIn(dto: AuthDto): Promise<{ access_token: string }> {
     try {
-      // Get pass from dto
-      // Get user email from dto
       const { password, email } = dto;
 
-      // Obtain user from DB by email from dto
       const customer = await this.prisma.customer.findUnique({
         where: { email },
       });
 
       if (!customer) throw new UnauthorizedException('Wrong credentials');
-      // Compare passHash from DB and the one generated from pass
-      const paswordMatch = await argon.verify(customer.passHash, password);
 
+      const paswordMatch = await argon.verify(customer.passHash, password);
       if (!paswordMatch) throw new UnauthorizedException('Wrong credentials');
 
-      //Grand token
       const { id } = customer;
-
-      // Genereta JWT
       const { access_token } = await this.signToken(email, id);
-      // Return JWT
 
       return { access_token };
     } catch (error) {
