@@ -29,7 +29,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  //TODO: check if works without PrismaService explicitly added
   providers: [AppService, PrismaService],
 })
 export class AppModule {}
