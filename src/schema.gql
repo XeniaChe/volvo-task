@@ -35,3 +35,17 @@ input WhereCustomerInput {
   createdAt: Timestamp
   updatedAt: Timestamp
 }
+
+type Mutation {
+  signUp(data: AuthInput!): Token!
+  signIn(data: AuthInput!): Token!
+}
+
+type Token {
+  access_token: String!
+}
+
+input AuthInput {
+  email: String!
+  password: String!
+}

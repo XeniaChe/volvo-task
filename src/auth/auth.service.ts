@@ -3,9 +3,11 @@ import {
   HttpStatus,
   HttpException,
   Injectable,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthDto } from './dto';
+// TODO: verify what to use dto vs AuthInput
+import { AuthDto, AuthInput } from './dto';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -19,7 +21,7 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signUp(dto: AuthDto): Promise<{ access_token: string }> {
+  async signUp(dto: AuthInput): Promise<{ access_token: string }> {
     try {
       const { email, password } = dto;
 
@@ -41,9 +43,13 @@ export class AuthService {
 
       return { access_token };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR, {
-        cause: error,
-      });
+      throw new HttpException(
+        'Some error occured',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error,
+        },
+      );
     }
   }
 
@@ -79,7 +85,7 @@ export class AuthService {
 
     const access_token = await this.jwtService.signAsync(payload, {
       secret: this.config.get('SECRET'),
-      expiresIn: '15m',
+      expiresIn: '1m',
     });
 
     return { access_token };
