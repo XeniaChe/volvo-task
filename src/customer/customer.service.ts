@@ -15,10 +15,4 @@ export class CustomerService {
       where,
     });
   }
-
-  async getAllAsync() {
-    const allCustms = await this.prisma.customer.findMany({});
-
-    return allCustms;
-  }
 }
