@@ -11,6 +11,7 @@ type Customer {
   """Date and time when the object was updated last time."""
   updatedAt: Timestamp!
   email: String!
+  refreshToken: String!
 }
 
 """
@@ -39,6 +40,7 @@ input WhereCustomerInput {
 type Mutation {
   signUp(data: AuthInput!): Token!
   signIn(data: AuthInput!): Token!
+  getRefreshedToken(data: String!): Token!
 }
 
 type Token {

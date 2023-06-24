@@ -14,8 +14,8 @@ datasource db {
 model Customer {
   id        String   @id @unique @default(uuid())
   email     String   @unique
-  // password  String
   passHash String
+  refreshToken String @default(uuid()) // Added random default only for existing records
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
