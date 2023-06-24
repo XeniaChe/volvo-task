@@ -3,11 +3,10 @@ import {
   HttpStatus,
   HttpException,
   Injectable,
-  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 // TODO: verify what to use dto vs AuthInput
-import { AuthDto, AuthInput } from './dto';
+import { AuthInput } from './dto';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -36,12 +35,7 @@ export class AuthService {
 
       delete savedCustomer.passHash;
 
-      const { access_token } = await this.signToken(
-        savedCustomer.email,
-        savedCustomer.id,
-      );
-
-      return { access_token };
+      return await this.signToken(savedCustomer.email, savedCustomer.id);
     } catch (error) {
       throw new HttpException(
         'Some error occured',
@@ -53,7 +47,7 @@ export class AuthService {
     }
   }
 
-  async signIn(dto: AuthDto): Promise<{ access_token: string }> {
+  async signIn(dto: AuthInput): Promise<{ access_token: string }> {
     try {
       const { password, email } = dto;
 
@@ -67,9 +61,8 @@ export class AuthService {
       if (!paswordMatch) throw new UnauthorizedException('Wrong credentials');
 
       const { id } = customer;
-      const { access_token } = await this.signToken(email, id);
 
-      return { access_token };
+      return await this.signToken(email, id);
     } catch (error) {
       throw new HttpException(error.message, error.status, {
         cause: error,
@@ -85,7 +78,7 @@ export class AuthService {
 
     const access_token = await this.jwtService.signAsync(payload, {
       secret: this.config.get('SECRET'),
-      expiresIn: '1m',
+      expiresIn: '15m',
     });
 
     return { access_token };

@@ -17,22 +17,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: any) {
-    // You can add more business logic here
-    // i.e quering DB for more user's detail for a given userId: payload.sub
-    // and passing that info along the basic user's credentials
-
-    const customer = await this.prisma.customer.findUnique({
+    const currUser = await this.prisma.customer.findUnique({
       where: { id: payload.sub },
     });
 
-    delete customer?.passHash; // No sensitive info to the client
+    delete currUser?.passHash; // No sensitive info to the client
 
-    return customer;
-
-    // DEFAULT behaviour
-    /*  return { userId: payload.sub, username: payload.username }; 
-    // those are the ceradentials of the user who made request with given token
-    // after the token has been validated this obj{} with credentials will be assigned to the
-    // Request (express native) obj and can be accessed in routes see. user.controller.ts */
+    return currUser;
   }
 }
