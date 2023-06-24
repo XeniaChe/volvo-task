@@ -1,11 +1,16 @@
 import { PrismaClient } from '@prisma/client';
 
 import { customers } from './seeds/customers';
+import * as argon from 'argon2';
 
 const prisma = new PrismaClient();
 
 async function main() {
   for (const customer of customers) {
+    const passHash = await argon.hash(customer.passHash);
+
+    customer.passHash = passHash;
+
     await prisma.customer.upsert({
       where: { id: customer.id },
       update: {},
