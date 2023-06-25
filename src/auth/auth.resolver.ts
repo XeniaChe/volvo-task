@@ -1,28 +1,33 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import { Token } from 'lib/entities/';
+import { UseGuards } from '@nestjs/common';
+import { AccessToken, Tokens } from 'lib/entities/';
 import { AuthInput } from './dto';
 import { AuthService } from './auth.service';
-import { BadRequestException } from '@nestjs/common';
+import { CurrentUser } from 'src/customer/decorator';
+import { RefreshTokenGuard } from './guard';
+import { GetRefreshToken } from './decorator';
 
-import { validate } from 'class-validator';
-
-//TODO: check where  AuthInput comes from
 @Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  @Mutation(() => Token)
-  async signUp(@Args('data') input: AuthInput) {
-    // TODO: VALIDATE USER INPUT
-    const errors = await validate(input);
-    if (errors.length > 0) {
-      throw new BadRequestException('Validation failed');
-    }
-    return this.authService.signUp(input);
+  @Mutation(() => Tokens)
+  async signUp(@Args('data') { email, password }: AuthInput) {
+    return this.authService.signUp({ email, password });
   }
 
-  @Mutation(() => Token)
+  @Mutation(() => Tokens)
   async signIn(@Args('data') { email, password }: AuthInput) {
     return this.authService.signIn({ email, password });
+  }
+
+  @Mutation(() => AccessToken)
+  @UseGuards(RefreshTokenGuard)
+  async getRefreshedToken(
+    @CurrentUser('sub') sub: string,
+    @CurrentUser('email') email: string,
+    @GetRefreshToken() refresh_token: string,
+  ) {
+    return this.authService.getUpdatedToken(refresh_token, { sub, email });
   }
 }

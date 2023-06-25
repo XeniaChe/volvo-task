@@ -20,11 +20,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   async enableShutdownHooks(app: INestApplication) {
     this.$on('beforeExit', async () => {
+      await this.clearDb();
+      console.log('DB cleaned');
       await app.close();
     });
   }
 
-  /* clearDb() {
+  clearDb() {
     return this.$transaction([this.customer.deleteMany()]);
-  } */
+  }
 }

@@ -38,16 +38,21 @@ input WhereCustomerInput {
 }
 
 type Mutation {
-  signUp(data: AuthInput!): Token!
-  signIn(data: AuthInput!): Token!
-  getRefreshedToken(data: String!): Token!
+  signUp(data: AuthInput!): Tokens!
+  signIn(data: AuthInput!): Tokens!
+  getRefreshedToken: AccessToken!
 }
 
-type Token {
+type Tokens {
   access_token: String!
+  refresh_token: String!
 }
 
 input AuthInput {
   email: String!
   password: String!
+}
+
+type AccessToken {
+  access_token: String!
 }

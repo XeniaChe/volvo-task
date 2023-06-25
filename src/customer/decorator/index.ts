@@ -1,1 +1,1 @@
-export * from './gerCustomer.decorator';
+export * from './getCurrUser.decorator';

@@ -3,7 +3,7 @@ import { Customer } from 'lib/entities/';
 import { CustomerService } from './customer.service';
 import { GetCustomerInput } from './dto/customer.input';
 import { CurrentUser } from './decorator';
-import { GqlAuthGuard } from '../auth/guard';
+import { AccessTokenGuard } from '../auth/guard';
 import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => Customer)
@@ -11,12 +11,11 @@ export class CustomerResolver {
   constructor(private readonly customerService: CustomerService) {}
 
   @Query(() => [Customer])
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(AccessTokenGuard)
   async customers(
     @CurrentUser() currUser: Customer,
     @Args('data') { skip, take, where }: GetCustomerInput,
   ) {
-    console.log('curr user ' + JSON.stringify(currUser));
     return this.customerService.findAll({ skip, take, where });
   }
 }
