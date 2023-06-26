@@ -12,10 +12,15 @@ export class CustomerResolver {
 
   @Query(() => [Customer])
   @UseGuards(AccessTokenGuard)
-  async customers(
-    @CurrentUser() currUser: Customer,
-    @Args('data') { skip, take, where }: GetCustomerInput,
-  ) {
+  async customers(@Args('data') { skip, take, where }: GetCustomerInput) {
     return this.customerService.findAll({ skip, take, where });
+  }
+
+  // To showcase the currently logged user
+  // and working refresh token functionality
+  @Query(() => Customer)
+  @UseGuards(AccessTokenGuard)
+  async getCurrUser(@CurrentUser() currUser: Customer) {
+    return this.customerService.showCurrUser(currUser);
   }
 }

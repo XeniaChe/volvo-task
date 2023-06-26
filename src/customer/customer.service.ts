@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GetCustomerInput } from './dto/customer.input';
+import { Customer } from 'lib/entities/';
 
 @Injectable()
 export class CustomerService {
@@ -14,5 +15,9 @@ export class CustomerService {
       cursor,
       where,
     });
+  }
+
+  showCurrUser(currUser: Customer) {
+    return currUser;
   }
 }
