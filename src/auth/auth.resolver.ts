@@ -21,6 +21,12 @@ export class AuthResolver {
     return this.authService.signIn({ email, password });
   }
 
+  @Mutation(() => String)
+  async verify(@Args('code') verifCode: string) {
+    // return this.authService.sendTokens();
+    return verifCode;
+  }
+
   @Mutation(() => AccessToken)
   @UseGuards(RefreshTokenGuard)
   async getRefreshedToken(

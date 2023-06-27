@@ -41,6 +41,7 @@ input WhereCustomerInput {
 type Mutation {
   signUp(data: AuthInput!): Tokens!
   signIn(data: AuthInput!): Tokens!
+  verify(code: String!): String!
   getRefreshedToken: AccessToken!
 }
 
