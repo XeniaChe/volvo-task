@@ -5,10 +5,12 @@ export const customers: Prisma.CustomerUpsertArgs['create'][] = [
     id: '9e391faf-64b2-4d4c-b879-463532920fd3',
     email: 'user@gmail.com',
     passHash: 'randow-password',
+    codeHash: '',
   },
   {
     id: '9e391faf-64b2-4d4c-b879-463532920fd4',
     email: 'user2@gmail.com',
     passHash: 'randow-password',
+    codeHash: '',
   },
 ];
