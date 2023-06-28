@@ -12,6 +12,7 @@ type Customer {
   updatedAt: Timestamp!
   email: String!
   refreshToken: String!
+  isActivated: Boolean!
 }
 
 """
@@ -41,7 +42,7 @@ input WhereCustomerInput {
 type Mutation {
   signUp(data: AuthInput!): Tokens!
   signIn(data: AuthInput!): Tokens!
-  verify(code: String!): String!
+  verify(data: VerificationInput!): Boolean!
   getRefreshedToken: AccessToken!
 }
 
@@ -53,6 +54,11 @@ type Tokens {
 input AuthInput {
   email: String!
   password: String!
+}
+
+input VerificationInput {
+  code: String!
+  email: String!
 }
 
 type AccessToken {

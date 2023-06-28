@@ -24,3 +24,17 @@ export class AuthInput {
   // @IsStrongPassword()
   password: string;
 }
+
+@InputType()
+export class VerificationInput {
+  @Field(() => String)
+  @IsNotEmpty()
+  @IsString()
+  code: string;
+
+  @Field(() => String)
+  @IsNotEmpty()
+  @IsString()
+  @IsEmail()
+  email: string;
+}

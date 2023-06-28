@@ -7,4 +7,6 @@ export class Customer extends Base {
   email: string;
   @Field(() => String)
   refreshToken: string;
+  @Field(() => Boolean)
+  isActivated: boolean;
 }

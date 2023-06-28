@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -19,7 +19,11 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       where: { id: payload.sub },
     });
 
+    if (!currUser.isActivated)
+      throw new ForbiddenException('Please verify your account');
+
     delete currUser?.passHash; // No sensitive info to the client
+    delete currUser?.codeHash;
 
     return currUser;
   }

@@ -1,7 +1,7 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { AccessToken, Tokens } from 'lib/entities/';
-import { AuthInput } from './dto';
+import { AuthInput, VerificationInput } from './dto';
 import { AuthService } from './auth.service';
 import { CurrentUser } from 'src/customer/decorator';
 import { RefreshTokenGuard } from './guard';
@@ -21,10 +21,9 @@ export class AuthResolver {
     return this.authService.signIn({ email, password });
   }
 
-  @Mutation(() => String)
-  async verify(@Args('code') verifCode: string) {
-    // return this.authService.sendTokens();
-    return verifCode;
+  @Mutation(() => Boolean)
+  async verify(@Args('data') { code, email }: VerificationInput) {
+    return this.authService.activateCustomer(code, email);
   }
 
   @Mutation(() => AccessToken)

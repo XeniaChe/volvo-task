@@ -14,7 +14,6 @@ import { ConfigService } from '@nestjs/config';
 import { Customer } from '@prisma/client';
 import { MailerService } from '../mailer/mailer.service';
 
-//TODO: add status codes in response if OK
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,30 +39,22 @@ export class AuthService {
         );
 
       const passHash = await argon.hash(password);
-      // TODO:
-      // add HASHED verifCode to a user
       const verifCode = this.#codeGenerator();
-      console.log({ verifCode });
       const codeHash = await argon.hash(verifCode);
 
       const newCustomer = await this.prisma.customer.create({
         data: {
           email,
           passHash,
-          // codeHash,
+          codeHash,
         },
       });
 
       delete newCustomer.passHash;
-      // delete newCustomer.codeHash;
+      delete newCustomer.codeHash;
 
       //Send email
-
-      /* await this.mailerSerice.sendEmail(
-        'xeniacserkun@gmail.com',
-        'TEST EMAIL',
-        url,
-      ); */
+      await this.mailerSerice.sendEmail(newCustomer.email, verifCode);
 
       const { access_token, refresh_token } = await this.#getSignedTokens(
         newCustomer.email,
@@ -84,8 +75,39 @@ export class AuthService {
     }
   }
 
-  async sendTokens() {
-    //TODO:
+  async activateCustomer(code: string, email: string): Promise<boolean> {
+    try {
+      const customer = await this.prisma.customer.findUnique({
+        where: { email },
+      });
+
+      if (!customer || !customer.codeHash)
+        throw new UnauthorizedException(
+          'User not authenticated. Please sign up',
+        );
+
+      // Verify code with customer.codeHash
+      const codeCheck = await argon.verify(customer.codeHash, code);
+      if (!codeCheck) throw new UnauthorizedException('Wrong activation code');
+
+      // If OK update customer.isActivated = true
+      await this.prisma.customer.update({
+        where: { id: customer.id },
+        data: { isActivated: true },
+      });
+
+      return true;
+    } catch (error) {
+      console.error(error);
+
+      throw new HttpException(
+        error.response?.message || 'Some error occured',
+        error.response?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error,
+        },
+      );
+    }
   }
 
   async signIn(
@@ -112,6 +134,8 @@ export class AuthService {
 
       return { access_token, refresh_token };
     } catch (error) {
+      console.error(error);
+
       throw new HttpException(
         error.response?.message || 'Some error occured',
         error.response?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -131,18 +155,11 @@ export class AuthService {
         where: { id: payload.sub },
       });
       if (!user || !user.refreshToken)
-        throw new ForbiddenException('Forbidden');
+        throw new UnauthorizedException('User not found. Please sign up');
 
       const hashFromDB = user.refreshToken;
       const refreshTokenMatch = await argon.verify(hashFromDB, refresh_token);
       if (!refreshTokenMatch) throw new ForbiddenException('Forbidden');
-
-      //Send email
-
-      const verifCode = this.#codeGenerator();
-      console.log({ verifCode });
-      const codeHash = await argon.hash(verifCode);
-      await this.mailerSerice.sendEmail('xeniacserkun@gmail.com', verifCode);
 
       const access_token = await this.jwtService.signAsync(payload, {
         secret: this.config.get('SECRET'),
@@ -151,6 +168,8 @@ export class AuthService {
 
       return { access_token };
     } catch (error) {
+      console.error(error);
+
       throw new HttpException(
         error.response?.message || 'Some error occured',
         error.response?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -186,12 +205,11 @@ export class AuthService {
   }
 
   async #updateRefreshToken(refresh_value: string, userId: string) {
-    const refreshToken = await argon.hash(refresh_value);
+    const refreshTokenHash = await argon.hash(refresh_value);
 
-    console.log('TOKEN REFRESHED');
-    await this.prisma.customer.update({
+    return await this.prisma.customer.update({
       where: { id: userId },
-      data: { refreshToken },
+      data: { refreshToken: refreshTokenHash },
     });
   }
 
@@ -200,7 +218,7 @@ export class AuthService {
     const validChars =
       'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-    for (let i = 0; i <= 5; i++) {
+    for (let i = 0; i <= 10; i++) {
       validCode += validChars.charAt(
         Math.floor(Math.random() * validChars.length),
       );
