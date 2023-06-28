@@ -5,9 +5,6 @@ We will discuss the proposed solution during the interview. You should be ready 
 
 There is some key features that must be implemented in the recruitment task:
 
-// TODO:
-// verify customer
-
 - login and signup operations for customers;
 
 - access token;
